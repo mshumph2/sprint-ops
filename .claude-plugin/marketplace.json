@@ -9,13 +9,8 @@
   "plugins": [
     {
       "name": "wbs-decomposer",
-      "version": "1.0.0",
       "description": "Decompose product requirements into parallelizable user stories grounded in codebase analysis",
-      "source": "./",
-      "strict": false,
-      "skills": [
-        "./wbs-decomposer"
-      ]
+      "source": "./"
     }
   ]
 }

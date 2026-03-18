@@ -12,8 +12,7 @@
     ["@semantic-release/git", {
       "assets": [
         "CHANGELOG.md",
-        ".claude-plugin/marketplace.json",
-        "wbs-decomposer/SKILL.md"
+        ".claude-plugin/plugin.json"
       ],
       "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
     }],
