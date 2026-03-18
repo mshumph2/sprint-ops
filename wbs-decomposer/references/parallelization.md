@@ -1,6 +1,6 @@
 # Parallelization Verification Rules
 
-This reference provides the rules, patterns, and strategies for verifying that user stories in the WBS are truly parallelizable. Read this during Phase 4 (Parallelization Verification) and Phase 5 (Dependency Flagging).
+This reference provides the rules, patterns, and strategies for verifying that user stories in the WBS are truly parallelizable. Read this during Phase 5 (Parallelization Verification) and Phase 6 (Dependency Flagging).
 
 ---
 
@@ -257,3 +257,30 @@ Integration tests that share database state can create false coupling. Verify th
 - Use isolated test databases/schemas
 - Use transactions that roll back
 - Create and clean up their own test data
+
+---
+
+## Gotchas
+
+Watch out for these common pitfalls during decomposition. Each represents a class of hidden coupling that frequently surfaces only at merge time.
+
+### Shared Database Migrations
+Multiple stories that each add columns to the same table will create conflicting migrations. Extract the schema change into Phase 0 or consolidate the migration.
+
+### Shared Configuration Files
+Stories that both need new environment variables can conflict if they modify the same `.env` or config file. Scope config changes carefully.
+
+### Circular Service Dependencies
+If Service A calls Service B and the requirement adds a call from B back to A, this creates a circular dependency. Flag it.
+
+### Authentication/Authorization Changes
+Auth middleware is almost always shared. If multiple stories need auth changes, extract the auth work into Phase 0.
+
+### Shared UI Components
+If multiple stories need to modify the same component (e.g., a navigation bar), extract the component change into Phase 0 or sequence the stories.
+
+### Test Infrastructure
+Stories that require new test utilities, fixtures, or helpers that other stories also need should have those extracted into Phase 0.
+
+### API Versioning
+If multiple stories modify the same API endpoint, they will conflict. Consider whether the endpoint should be versioned or if the changes should be combined into one story.

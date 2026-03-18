@@ -124,8 +124,17 @@ If any of these is genuinely unknown, ask about it.
 ## Handling Edge Cases in the Clarification Loop
 
 ### The user says "just proceed" or "it's all in the PRD"
-Do not comply. Acknowledge their preference, then ask your single most important outstanding question. Frame it as necessary for scoping accuracy:
-> "Understood — just one thing I need to be sure about before I can scope the stories accurately: [question]"
+
+Respect the user's choice. Do not ask another question. Instead, acknowledge their preference, state the assumptions you will carry forward for any outstanding gaps, and offer one final chance to correct them:
+
+> "Understood — I'll proceed with these assumptions for the open items:
+>
+> - [Assumption for gap 1]
+> - [Assumption for gap 2]
+>
+> If any of those are wrong, correct me now. Otherwise I'll start the codebase analysis."
+
+Wait for a single response. If the user confirms or says nothing, continue. If they correct an assumption, update it and continue. Do not re-enter the question loop.
 
 ### The user provides an extremely detailed PRD
 Apply the entry condition: assess all six question categories against the PRD. If all six are genuinely covered, skip the loop and send the readiness signal. If any gaps remain, ask about them. A good PRD may require only 2–3 questions; a vague one may require 7–8. The number is not the point — coverage is.

@@ -20,6 +20,20 @@ You are the WBS Decomposer — an agent skill that takes a high-level product re
 
 If a phase produces no output (e.g., codebase analysis finds no relevant modules), record that explicitly and continue. The answer to "can I skip this phase?" is always no.
 
+## Progress Tracking
+
+At the start of execution — before Phase 1 begins — create one task per phase using the TaskCreate tool:
+
+- Phase 1: Codebase Analysis
+- Phase 2: Requirement Decomposition
+- Phase 3: Assumption Verification
+- Phase 4: Story Generation
+- Phase 5: Parallelization Verification
+- Phase 6: Dependency Flagging
+- Phase 7: Output
+
+Before beginning each phase, mark its task in-progress using TaskUpdate. After completing each phase, mark it complete using TaskUpdate.
+
 ## What This Skill Produces
 
 - A `wbs.md` file containing independently implementable user stories
@@ -46,6 +60,16 @@ Guard clauses to evaluate before and during execution. These are not optional �
 - **All stories sequentially dependent** — generate a sequenced WBS instead of a parallel one; label the document clearly as sequenced; replace the "Parallel Assumption" field in every story with "Sequencing Rationale."
 - **Output file already exists** — overwrite silently; note the overwrite in the final summary (the user confirmed the path in Step 3).
 - **URL reference inaccessible** — report the failure, request an alternative input method (inline paste or file path), and do not proceed until requirement text is in hand.
+
+---
+
+## User Input
+
+$ARGUMENTS
+
+If the user provided a requirement inline with the command (populated above), treat that text as the initial product requirement and skip directly to evaluating whether clarification is needed per `references/clarification.md`. Do not ask the user to re-provide the requirement.
+
+If `$ARGUMENTS` is empty, proceed with Step 1 below.
 
 ---
 
@@ -171,44 +195,15 @@ Look for capabilities that share:
 
 These shared foundations become **Phase 0 prerequisites**.
 
+> **Read `references/requirement-decomposition.md`** for the complete decomposition methodology, including capability extraction rules, layer-mapping decision trees, shared foundation identification, and anti-patterns with examples.
+
 ---
 
 ## Phase 3: Assumption Verification
 
 Before generating stories, compile all significant assumptions made during Phases 1 and 2 and present them to the user for confirmation or correction.
 
-### 3.1 Compile Assumptions
-
-Gather every non-trivial inference made so far across four categories:
-
-1. **Requirement Interpretation** — how you read ambiguous or underspecified parts of the PRD (e.g., "I interpreted 'user dashboard' to mean the existing `/app/dashboard` page, not a new standalone page")
-2. **File/Module Ownership** — which files you attributed to which domain or feature area (e.g., "I mapped authentication to `src/auth/` and assumed `src/middleware/session.ts` is owned by that domain")
-3. **Architecture Decisions** — inferences about layer boundaries, patterns, or system structure (e.g., "I assumed this is a feature-folder monolith, not a layered architecture")
-4. **Parallelizability** — which capabilities you believe can be implemented independently and why (e.g., "I assumed Story 3 and Story 4 can run in parallel because they touch different modules with no shared data models")
-
-Only list assumptions that, if wrong, would materially change the stories. Omit trivially obvious inferences. Cap at 10 assumptions maximum — rank by impact (effect on story scope, story count, or parallelization structure) and present only the top 10. If fewer than 3 assumptions exist, present all of them; do not pad. A focused list of 5 high-risk assumptions is better than an exhaustive 12.
-
-### 3.2 Present to User
-
-Present the compiled assumptions grouped by category, then ask:
-
-> "These are the assumptions I've made before generating stories. Please confirm, correct, or add context to any of them. When you're ready, say 'proceed' and I'll generate the stories."
-
-Wait for a full response before continuing. Do not proceed on silence.
-
-### 3.3 Apply Corrections
-
-If the user corrects an assumption:
-
-- Acknowledge the correction explicitly
-- Update your understanding for the affected category:
-  - **Requirement interpretation** corrections → revise the capability mapping from Phase 2
-  - **File/module ownership** corrections → update the file scope used in story generation
-  - **Architecture decision** corrections → revise the layer analysis from Phase 1
-  - **Parallelizability** corrections → pre-seed the dependency flags used in Phase 5
-- Ask: "Any other corrections before I proceed?"
-
-Do not re-run full analysis phases. Apply targeted corrections and continue.
+> **Read `references/assumption-verification.md`** for the complete assumption-compilation methodology, including categories, ranking rules, presentation format, and how to apply corrections by category.
 
 ---
 
@@ -216,33 +211,7 @@ Do not re-run full analysis phases. Apply targeted corrections and continue.
 
 Generate user stories from the mapped capabilities.
 
-### Story Structure (Required)
-
-Every story MUST include all of these fields:
-
-```
-### Story N: [Concise Title]
-
-**As a** [specific role], **I want** [specific capability], **so that** [measurable benefit].
-
-**Acceptance Criteria:**
-- [ ] [Observable, testable criterion]
-- [ ] [Observable, testable criterion]
-
-**Scope:**
-- `path/to/file.ext` — [specific change description]
-- `path/to/directory/` — [specific change description]
-
-**Parallel Assumption:** [Explicit statement of why this story can be implemented independently]
-```
-
-### Story Quality Rules
-
-1. **Atomic**: One story = one capability. If a story has "and" in the title, split it.
-2. **Testable**: Every acceptance criterion must be verifiable without reading the implementation.
-3. **Scoped**: Every story must list specific files/modules. "Various files" is not acceptable.
-4. **Independent**: The parallel assumption must be a positive statement, not "no dependencies."
-5. **Valuable**: Every story must deliver user-visible value. No "set up infrastructure" stories (those go in Phase 0).
+> **Read `references/story-structure.md`** for the required story template, field definitions, and quality rules.
 
 ---
 
@@ -260,7 +229,7 @@ For each pair of parallel stories, verify:
 4. **Migration independence**: No two stories require database migrations that must run in a specific order.
 5. **Configuration non-conflict**: No two stories add the same environment variable or config key.
 
-> **Read `references/parallelization.md`** for the complete verification checklist, common dependency patterns, and resolution strategies.
+> **Read `references/parallelization.md`** for the complete verification checklist, common dependency patterns, resolution strategies, and anti-pattern gotchas.
 
 ### When Verification Fails
 
@@ -274,14 +243,9 @@ If two stories cannot be parallelized:
 
 ## Phase 6: Dependency Flagging
 
-Any requirement that cannot be decomposed into parallel stories must be flagged with:
+Any requirement that cannot be decomposed into parallel stories must be flagged. Be honest — a WBS that hides dependencies is worse than no WBS at all.
 
-- **Which stories are coupled** and why
-- **What the dependency is** (shared file, shared migration, interface change)
-- **Suggested ordering** if one must come before the other
-- **Impact** if implemented in parallel anyway (merge conflicts, data corruption, broken contracts)
-
-Be honest. A WBS that hides dependencies is worse than no WBS at all.
+> **Read `references/parallelization.md`** for the required flagging format and common dependency anti-patterns.
 
 ---
 
@@ -308,6 +272,16 @@ Write the final WBS document to the agreed-upon location.
    - Any Phase 0 prerequisites identified
    - Any validation corrections made (if step 4 required fixes)
 
+### What's Next
+
+After reporting the summary, tell the user what they can do with the WBS:
+
+> "Your WBS is ready at `[output path]`. Common next steps:
+>
+> - **Linear / Jira / GitHub Issues**: Each story maps to one issue. Acceptance Criteria → checklist. Scope file paths → task list items.
+> - **Parallel development**: Share the WBS with your team. Each developer picks an unblocked story from the parallel set.
+> - **Dependencies first**: Resolve Flagged Dependencies and complete any Phase 0 prerequisites before starting parallel development."
+
 ### Output Format
 
 Use the template structure from `assets/wbs-template.md`. The output must be a valid markdown file that can be:
@@ -315,29 +289,3 @@ Use the template structure from `assets/wbs-template.md`. The output must be a v
 - Imported into project management tools
 - Used as input for story creation in Jira, Linear, GitHub Issues, etc.
 
----
-
-## Gotchas
-
-Watch out for these common pitfalls during decomposition:
-
-### Shared Database Migrations
-Multiple stories that each add columns to the same table will create conflicting migrations. Extract the schema change into Phase 0 or consolidate the migration.
-
-### Shared Configuration Files
-Stories that both need new environment variables can conflict if they modify the same `.env` or config file. Scope config changes carefully.
-
-### Circular Service Dependencies
-If Service A calls Service B and the requirement adds a call from B back to A, this creates a circular dependency. Flag it.
-
-### Authentication/Authorization Changes
-Auth middleware is almost always shared. If multiple stories need auth changes, extract the auth work into Phase 0.
-
-### Shared UI Components
-If multiple stories need to modify the same component (e.g., a navigation bar), extract the component change into Phase 0 or sequence the stories.
-
-### Test Infrastructure
-Stories that require new test utilities, fixtures, or helpers that other stories also need should have those extracted into Phase 0.
-
-### API Versioning
-If multiple stories modify the same API endpoint, they will conflict. Consider whether the endpoint should be versioned or if the changes should be combined into one story.
