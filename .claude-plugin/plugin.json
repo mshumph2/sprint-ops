@@ -1,7 +1,7 @@
 {
   "name": "wbs-decomposer",
   "description": "Decompose product requirements into parallelizable user stories grounded in codebase analysis",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": {
     "name": "mshumph2"
   },

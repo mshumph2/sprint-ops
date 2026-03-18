@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/mshumph2/sprint-ops/compare/v1.1.0...v1.1.1) (2026-03-18)
+
+
+### Bug Fixes
+
+* incorrect directory structure ([31b07cc](https://github.com/mshumph2/sprint-ops/commit/31b07cc1d6312abfa6ecb63e16fb633a978b0795))
+
 # [1.1.0](https://github.com/mshumph2/sprint-ops/compare/v1.0.0...v1.1.0) (2026-03-18)
 
 
